@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "paths": {
+      "@vale-integrador/shared/*": ["./packages/shared/src/*"]
+    },
+    "types": ["bun-types", "node"]
+  },
+  "include": ["**/*.ts", "**/*.tsx", "apps/**/*", "packages/**/*"],
+  "exclude": ["node_modules", "dist", ".turbo"]
+}
