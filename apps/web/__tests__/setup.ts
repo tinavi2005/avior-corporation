@@ -1,25 +1,24 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
-// Mock Next.js modules
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: jest.fn(),
-    replace: jest.fn(),
-    refresh: jest.fn(),
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
   }),
   usePathname: () => '/',
 }));
 
-// Mock @insforge/sdk
-jest.mock('@insforge/sdk', () => ({
-  createClient: jest.fn(() => ({
+vi.mock('@insforge/sdk', () => ({
+  createClient: vi.fn(() => ({
     auth: {
-      signInWithOAuth: jest.fn(),
-      signOut: jest.fn(),
-      getCurrentUser: jest.fn(),
+      signInWithOAuth: vi.fn(),
+      signOut: vi.fn(),
+      getCurrentUser: vi.fn(),
     },
     database: {
-      from: jest.fn(),
+      from: vi.fn(),
     },
   })),
 }));

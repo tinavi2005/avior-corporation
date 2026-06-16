@@ -1,0 +1,27 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1781641148509,
+      "tag": "0000_white_iceman",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1781641200000,
+      "tag": "0001_sync_auth_users",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1781641300000,
+      "tag": "0002_seed_roles",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,7 +1,9 @@
+import { RoleType, ROLE_PERMISSIONS, type RoleType as RoleTypeLiteral } from '@vale-integrador/shared';
+
 export interface User {
   id: string;
   email: string;
-  role: 'student' | 'instructor' | 'admin' | 'mechanic' | 'coordinator' | 'secretary';
+  role: RoleTypeLiteral;
   profile?: {
     firstName: string;
     lastName: string;
@@ -18,17 +20,11 @@ export interface AuthState {
 export function hasPermission(user: User | null, permission: string): boolean {
   if (!user) return false;
 
-  const permissions: Record<string, string[]> = {
-    student: ['profile:read:own', 'enrollments:read:own', 'grades:read:own', 'courses:read:own'],
-    instructor: ['profile:read:own', 'courses:read:own', 'grades:read:own', 'grades:write:own'],
-    admin: ['*'],
-    mechanic: ['profile:read:own', 'aircraft:read:own'],
-    coordinator: ['profile:read:own', 'courses:read:all'],
-    secretary: ['profile:read:own', 'enrollments:read:all', 'grades:read:all'],
-  };
+  const role = user.role as RoleTypeLiteral;
+  if (!Object.values(RoleType).includes(role)) return false;
 
-  const userPermissions = permissions[user.role] || [];
-  return userPermissions.includes('*') || userPermissions.includes(permission);
+  const userPermissions = ROLE_PERMISSIONS[role] || [];
+  return userPermissions.includes(permission);
 }
 
 export function signOut(): void {

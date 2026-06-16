@@ -12,7 +12,7 @@ export function parseJWTPayload(token: string): JWTPayload | null {
     const parts = token.split('.')
     if (parts.length !== 3) return null
 
-    const payload = JSON.parse(atob(parts[1]))
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf-8'))
 
     if (!payload.sub || !payload.exp) return null
 

@@ -13,9 +13,7 @@
     "noEmit": true,
     "paths": {
       "@vale-integrador/shared/*": ["./packages/shared/src/*"]
-    },
-    "types": ["bun-types", "node"]
+    }
   },
-  "include": ["**/*.ts", "**/*.tsx", "apps/**/*", "packages/**/*"],
-  "exclude": ["node_modules", "dist", ".turbo"]
+  "exclude": ["node_modules", "dist", ".turbo", ".next", ".expo"]
 }

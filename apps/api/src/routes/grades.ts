@@ -1,59 +1,109 @@
 import { Elysia } from 'elysia';
-import { adminClient } from '../lib/insforge';
-
-type InsForgeGrade = {
-  id: string;
-  student_id: string;
-  course_id: string;
-  enrollment_id: string;
-  grade: number;
-  letter_grade: string | null;
-  observations: string | null;
-  graded_by: string;
-  graded_at: string;
-  created_at: string;
-  updated_at: string;
-};
-
-function handleError(error: { message: string; code?: string } | null, entity: string) {
-  console.error(`InsForge error fetching ${entity}:`, error);
-  throw { status: 500, message: `Failed to fetch ${entity}`, code: 'DATABASE_ERROR' };
-}
+import { eq, count } from 'drizzle-orm';
+import { db } from '../db';
+import * as schema from '../db/schema';
+import { requirePermission } from '../lib/auth';
+import { jwtMiddleware } from '../lib/jwt';
+import {
+  validateUuid,
+  validateBody,
+  validateQuery,
+  paginationQuerySchema,
+} from '../lib/validation';
+import { gradeCreateSchema, gradeUpdateSchema } from '@vale-integrador/shared';
 
 export const gradeRoutes = new Elysia({ prefix: '/grades' })
-  .get('/', async () => {
-    const gradesRes = await adminClient.database.from('grades').select('*');
-    if (gradesRes.error) handleError(gradesRes.error, 'grades');
-    const grades = (gradesRes.data ?? []) as InsForgeGrade[];
+  .use(jwtMiddleware)
+  .get('/', async ({ query, user }) => {
+    await requirePermission(user, 'grades:read:all');
 
-    return grades.map((g) => ({
-      id: g.id,
-      studentId: g.student_id,
-      courseId: g.course_id,
-      enrollmentId: g.enrollment_id,
-      grade: Number(g.grade),
-      letterGrade: g.letter_grade ?? undefined,
-      observations: g.observations ?? undefined,
-      gradedBy: g.graded_by,
-      gradedAt: g.graded_at,
-    }));
-  })
-  .get('/:id', async ({ params: { id } }) => {
-    const gradeRes = await adminClient.database.from('grades').select('*').eq('id', id).maybeSingle();
-    if (gradeRes.error) handleError(gradeRes.error, 'grade');
+    const { limit, offset } = validateQuery(paginationQuerySchema, query ?? {});
+    const enrollmentId = (query?.enrollmentId as string | undefined)?.trim();
 
-    const grade = gradeRes.data as InsForgeGrade | null;
-    if (!grade) throw { status: 404, message: 'Grade not found', code: 'NOT_FOUND' };
+    const whereClause = enrollmentId
+      ? eq(schema.grades.enrollmentId, validateUuid(enrollmentId))
+      : undefined;
+
+    const [grades, totalResult] = await Promise.all([
+      db
+        .select({
+          id: schema.grades.id,
+          enrollmentId: schema.grades.enrollmentId,
+          name: schema.grades.name,
+          weight: schema.grades.weight,
+          score: schema.grades.score,
+          gradedAt: schema.grades.gradedAt,
+          createdAt: schema.grades.createdAt,
+          updatedAt: schema.grades.updatedAt,
+        })
+        .from(schema.grades)
+        .where(whereClause)
+        .limit(limit)
+        .offset(offset)
+        .orderBy(schema.grades.createdAt),
+      db
+        .select({ count: count() })
+        .from(schema.grades)
+        .where(whereClause),
+    ]);
 
     return {
-      id: grade.id,
-      studentId: grade.student_id,
-      courseId: grade.course_id,
-      enrollmentId: grade.enrollment_id,
-      grade: Number(grade.grade),
-      letterGrade: grade.letter_grade ?? undefined,
-      observations: grade.observations ?? undefined,
-      gradedBy: grade.graded_by,
-      gradedAt: grade.graded_at,
+      data: grades,
+      pagination: {
+        limit,
+        offset,
+        total: Number(totalResult[0]?.count ?? 0),
+      },
     };
+  })
+  .post('/', async ({ body, user }) => {
+    await requirePermission(user, 'grades:write:all');
+
+    const data = validateBody(gradeCreateSchema, body);
+    const [grade] = await db
+      .insert(schema.grades)
+      .values({
+        ...data,
+        gradedAt: data.score !== null && data.score !== undefined ? new Date() : null,
+      })
+      .returning();
+
+    return grade;
+  })
+  .get('/:id', async ({ params: { id }, user }) => {
+    await requirePermission(user, 'grades:read:all');
+    const gradeId = validateUuid(id);
+
+    const [grade] = await db
+      .select()
+      .from(schema.grades)
+      .where(eq(schema.grades.id, gradeId))
+      .limit(1);
+
+    if (!grade) {
+      throw new Error('Grade not found');
+    }
+
+    return grade;
+  })
+  .patch('/:id', async ({ params: { id }, body, user }) => {
+    await requirePermission(user, 'grades:write:all');
+    const gradeId = validateUuid(id);
+
+    const data = validateBody(gradeUpdateSchema, body);
+    const [updated] = await db
+      .update(schema.grades)
+      .set({
+        ...data,
+        gradedAt: data.score !== undefined ? new Date() : undefined,
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.grades.id, gradeId))
+      .returning();
+
+    if (!updated) {
+      throw new Error('Grade not found');
+    }
+
+    return updated;
   });

@@ -3,8 +3,8 @@ import { defineConfig } from 'drizzle-kit';
 export default defineConfig({
   schema: './src/db/schema.ts',
   out: './drizzle',
-  dialect: 'postgresql',
+  driver: 'pg',
   dbCredentials: {
-    url: process.env.DATABASE_URL || 'postgresql://localhost:5432/vale_integrador',
+    connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/vale_integrador',
   },
 });

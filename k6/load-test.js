@@ -1,3 +1,8 @@
+/*
+cargar de usuarios virtuales
+Test de carga
+*/ 
+
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { Rate } from 'k6/metrics';
@@ -20,7 +25,7 @@ const BASE_URL = __ENV.TARGET_URL || 'http://localhost:5555';
 
 export default function () {
   // Health check
-  const healthRes = http.get(`${BASE_URL}/health`);
+  const healthRes = http.get(`${BASE_URL}/api/v1/health`);
   check(healthRes, {
     'health check status 200': (r) => r.status === 200,
   });

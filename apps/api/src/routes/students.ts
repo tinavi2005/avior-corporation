@@ -1,250 +1,229 @@
 import { Elysia } from 'elysia';
-import { adminClient } from '../lib/insforge';
-
-type InsForgeUser = {
-  id: string;
-  email: string;
-  password_hash: string;
-  email_verified: boolean;
-  avatar_url: string | null;
-  last_login_at: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-type InsForgeProfile = {
-  id: string;
-  user_id: string;
-  first_name: string;
-  last_name: string;
-  phone: string | null;
-  address: string | null;
-  date_of_birth: string | null;
-  gender: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-type InsForgeRole = {
-  id: string;
-  name: string;
-  description: string | null;
-  permissions: Record<string, unknown> | null;
-  created_at: string;
-  updated_at: string;
-};
-
-type InsForgeUserRole = {
-  id: string;
-  user_id: string;
-  role_id: string;
-  created_at: string;
-};
-
-type InsForgeStudent = {
-  id: string;
-  user_id: string;
-  student_number: string | null;
-  program_id: string | null;
-  status: string;
-  created_at: string;
-  updated_at: string;
-};
-
-type InsForgeEnrollment = {
-  id: string;
-  student_id: string;
-  course_id: string;
-  status: string;
-  enrolled_at: string | null;
-  completed_at: string | null;
-  grade: number | null;
-  created_at: string;
-  updated_at: string;
-};
-
-type InsForgeGrade = {
-  id: string;
-  student_id: string;
-  course_id: string;
-  enrollment_id: string;
-  grade: number;
-  letter_grade: string | null;
-  observations: string | null;
-  graded_by: string;
-  graded_at: string;
-  created_at: string;
-  updated_at: string;
-};
-
-type InsForgeCourse = {
-  id: string;
-  code: string;
-  name: string;
-  description: string | null;
-  credits: number;
-  hours_per_week: number | null;
-  max_students: number | null;
-  teacher_id: string | null;
-  active: boolean;
-  created_at: string;
-  updated_at: string;
-  period_id: string | null;
-};
-
-function handleError(error: { message: string; code?: string } | null, entity: string) {
-  console.error(`InsForge error fetching ${entity}:`, error);
-  throw { status: 500, message: `Failed to fetch ${entity}`, code: 'DATABASE_ERROR' };
-}
+import { eq, ilike, or, count } from 'drizzle-orm';
+import { db } from '../db';
+import * as schema from '../db/schema';
+import { requirePermission } from '../lib/auth';
+import { jwtMiddleware } from '../lib/jwt';
+import { validateUuid, validateQuery, paginationQuerySchema } from '../lib/validation';
 
 export const studentRoutes = new Elysia({ prefix: '/students' })
-  .get('/', async () => {
-    const [usersRes, profilesRes, userRolesRes, rolesRes, studentsRes] = await Promise.all([
-      adminClient.database.from('users').select('*'),
-      adminClient.database.from('profiles').select('*'),
-      adminClient.database.from('user_roles').select('*'),
-      adminClient.database.from('roles').select('*'),
-      adminClient.database.from('students').select('*'),
+  .use(jwtMiddleware)
+  .get('/', async ({ query, user }) => {
+    await requirePermission(user, 'students:read:all');
+
+    const { limit, offset } = validateQuery(paginationQuerySchema, query ?? {});
+    const search = (query?.search as string | undefined)?.trim();
+
+    const whereClause = search
+      ? or(
+          ilike(schema.profiles.firstName, `%${search}%`),
+          ilike(schema.profiles.lastName, `%${search}%`),
+          ilike(schema.users.email, `%${search}%`),
+          ilike(schema.students.studentCode, `%${search}%`),
+        )
+      : undefined;
+
+    const [rows, totalResult] = await Promise.all([
+      db
+        .select({
+          id: schema.students.id,
+          userId: schema.students.userId,
+          studentCode: schema.students.studentCode,
+          emergencyContact: schema.students.emergencyContact,
+          emergencyPhone: schema.students.emergencyPhone,
+          bloodType: schema.students.bloodType,
+          allergies: schema.students.allergies,
+          notes: schema.students.notes,
+          programId: schema.students.programId,
+          status: schema.students.status,
+          createdAt: schema.students.createdAt,
+          updatedAt: schema.students.updatedAt,
+          userEmail: schema.users.email,
+          profileFirstName: schema.profiles.firstName,
+          profileLastName: schema.profiles.lastName,
+          programName: schema.programs.name,
+          programCode: schema.programs.code,
+        })
+        .from(schema.students)
+        .innerJoin(schema.users, eq(schema.students.userId, schema.users.id))
+        .innerJoin(schema.profiles, eq(schema.profiles.userId, schema.users.id))
+        .leftJoin(schema.programs, eq(schema.students.programId, schema.programs.id))
+        .where(whereClause)
+        .limit(limit)
+        .offset(offset)
+        .orderBy(schema.students.studentCode),
+      db
+        .select({ count: count() })
+        .from(schema.students)
+        .innerJoin(schema.users, eq(schema.students.userId, schema.users.id))
+        .innerJoin(schema.profiles, eq(schema.profiles.userId, schema.users.id))
+        .where(whereClause),
     ]);
 
-    if (usersRes.error) handleError(usersRes.error, 'users');
-    if (profilesRes.error) handleError(profilesRes.error, 'profiles');
-    if (userRolesRes.error) handleError(userRolesRes.error, 'user_roles');
-    if (rolesRes.error) handleError(rolesRes.error, 'roles');
-    if (studentsRes.error) handleError(studentsRes.error, 'students');
+    const students = rows.map((r) => ({
+      id: r.id,
+      userId: r.userId,
+      studentCode: r.studentCode,
+      emergencyContact: r.emergencyContact,
+      emergencyPhone: r.emergencyPhone,
+      bloodType: r.bloodType,
+      allergies: r.allergies,
+      notes: r.notes,
+      programId: r.programId,
+      status: r.status,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+      user: {
+        email: r.userEmail,
+        firstName: r.profileFirstName,
+        lastName: r.profileLastName,
+      },
+      program: r.programId
+        ? { id: r.programId, name: r.programName, code: r.programCode }
+        : null,
+    }));
 
-    const users = (usersRes.data ?? []) as InsForgeUser[];
-    const profiles = (profilesRes.data ?? []) as InsForgeProfile[];
-    const userRoles = (userRolesRes.data ?? []) as InsForgeUserRole[];
-    const roles = (rolesRes.data ?? []) as InsForgeRole[];
-    const students = (studentsRes.data ?? []) as InsForgeStudent[];
-
-    const profilesByUserId = new Map(profiles.map((p) => [p.user_id, p]));
-    const roleMap = new Map(roles.map((r) => [r.id, r.name]));
-    const studentByUserId = new Map(students.map((s) => [s.user_id, s]));
-
-    const studentUsers = users.filter((u) => {
-      const userRole = userRoles.find((ur) => ur.user_id === u.id);
-      return userRole ? roleMap.get(userRole.role_id) === 'student' : false;
-    });
-
-    return studentUsers.map((u) => {
-      const profile = profilesByUserId.get(u.id) ?? null;
-      const student = studentByUserId.get(u.id);
-      return {
-        id: u.id,
-        email: u.email,
-        role: 'student',
-        isActive: student?.status === 'active',
-        profile: profile
-          ? {
-              id: profile.id,
-              userId: u.id,
-              firstName: profile.first_name,
-              lastName: profile.last_name,
-              phone: profile.phone ?? undefined,
-              address: profile.address ?? undefined,
-              dateOfBirth: profile.date_of_birth ?? undefined,
-              avatarUrl: u.avatar_url ?? undefined,
-              createdAt: profile.created_at,
-              updatedAt: profile.updated_at,
-            }
-          : null,
-        createdAt: u.created_at,
-        updatedAt: u.updated_at,
-      };
-    });
+    return {
+      data: students,
+      pagination: {
+        limit,
+        offset,
+        total: Number(totalResult[0]?.count ?? 0),
+      },
+    };
   })
-  .get('/:id', async ({ params: { id } }) => {
-    const [userRes, profilesRes, userRolesRes, rolesRes, studentsRes] = await Promise.all([
-      adminClient.database.from('users').select('*').eq('id', id).maybeSingle(),
-      adminClient.database.from('profiles').select('*').eq('user_id', id).maybeSingle(),
-      adminClient.database.from('user_roles').select('*').eq('user_id', id).maybeSingle(),
-      adminClient.database.from('roles').select('*'),
-      adminClient.database.from('students').select('*').eq('user_id', id).maybeSingle(),
-    ]);
+  .get('/:id', async ({ params: { id }, user }) => {
+    await requirePermission(user, 'students:read:all');
+    const studentId = validateUuid(id);
 
-    if (userRes.error) handleError(userRes.error, 'user');
-    const user = userRes.data as InsForgeUser | null;
-    if (!user) throw { status: 404, message: 'Student not found', code: 'NOT_FOUND' };
+    const [row] = await db
+      .select({
+        id: schema.students.id,
+        userId: schema.students.userId,
+        studentCode: schema.students.studentCode,
+        emergencyContact: schema.students.emergencyContact,
+        emergencyPhone: schema.students.emergencyPhone,
+        bloodType: schema.students.bloodType,
+        allergies: schema.students.allergies,
+        notes: schema.students.notes,
+        programId: schema.students.programId,
+        status: schema.students.status,
+        createdAt: schema.students.createdAt,
+        updatedAt: schema.students.updatedAt,
+        userEmail: schema.users.email,
+        profileFirstName: schema.profiles.firstName,
+        profileLastName: schema.profiles.lastName,
+        programName: schema.programs.name,
+        programCode: schema.programs.code,
+      })
+      .from(schema.students)
+      .innerJoin(schema.users, eq(schema.students.userId, schema.users.id))
+      .innerJoin(schema.profiles, eq(schema.profiles.userId, schema.users.id))
+      .leftJoin(schema.programs, eq(schema.students.programId, schema.programs.id))
+      .where(eq(schema.students.id, studentId))
+      .limit(1);
 
-    if (profilesRes.error) handleError(profilesRes.error, 'profile');
-    if (studentsRes.error) handleError(studentsRes.error, 'student');
-
-    const profile = (profilesRes.data ?? null) as InsForgeProfile | null;
-    const student = (studentsRes.data ?? null) as InsForgeStudent | null;
-
-    let roleName = 'student';
-    if (!userRolesRes.error && userRolesRes.data) {
-      const roles = (rolesRes.data ?? []) as InsForgeRole[];
-      const roleMap = new Map(roles.map((r) => [r.id, r.name]));
-      roleName = roleMap.get((userRolesRes.data as InsForgeUserRole).role_id) ?? 'student';
+    if (!row) {
+      throw new Error('Student not found');
     }
 
     return {
-      id: user.id,
-      email: user.email,
-      role: roleName,
-      isActive: student?.status === 'active',
-      profile: profile
-        ? {
-            id: profile.id,
-            userId: user.id,
-            firstName: profile.first_name,
-            lastName: profile.last_name,
-            phone: profile.phone ?? undefined,
-            address: profile.address ?? undefined,
-            dateOfBirth: profile.date_of_birth ?? undefined,
-            avatarUrl: user.avatar_url ?? undefined,
-            createdAt: profile.created_at,
-            updatedAt: profile.updated_at,
-          }
+      id: row.id,
+      userId: row.userId,
+      studentCode: row.studentCode,
+      emergencyContact: row.emergencyContact,
+      emergencyPhone: row.emergencyPhone,
+      bloodType: row.bloodType,
+      allergies: row.allergies,
+      notes: row.notes,
+      programId: row.programId,
+      status: row.status,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      user: {
+        email: row.userEmail,
+        firstName: row.profileFirstName,
+        lastName: row.profileLastName,
+      },
+      program: row.programId
+        ? { id: row.programId, name: row.programName, code: row.programCode }
         : null,
-      createdAt: user.created_at,
-      updatedAt: user.updated_at,
     };
   })
-  .get('/:id/enrollments', async ({ params: { id } }) => {
-    const studentRes = await adminClient.database.from('students').select('*').eq('user_id', id).maybeSingle();
-    if (studentRes.error) handleError(studentRes.error, 'student');
-    const student = studentRes.data as InsForgeStudent | null;
-    if (!student) throw { status: 404, message: 'Student not found', code: 'NOT_FOUND' };
+  .get('/:id/enrollments', async ({ params: { id }, user }) => {
+    await requirePermission(user, 'enrollments:read:all');
+    const studentId = validateUuid(id);
 
-    const enrollmentsRes = await adminClient.database.from('enrollments').select('*').eq('student_id', student.id);
-    if (enrollmentsRes.error) handleError(enrollmentsRes.error, 'enrollments');
-    const enrollments = (enrollmentsRes.data ?? []) as InsForgeEnrollment[];
+    const rows = await db
+      .select({
+        id: schema.enrollments.id,
+        studentId: schema.enrollments.studentId,
+        courseId: schema.enrollments.courseId,
+        periodId: schema.enrollments.periodId,
+        status: schema.enrollments.status,
+        enrolledAt: schema.enrollments.enrolledAt,
+        completedAt: schema.enrollments.completedAt,
+        grade: schema.enrollments.grade,
+        courseCode: schema.courses.code,
+        courseName: schema.courses.name,
+        courseCredits: schema.courses.credits,
+      })
+      .from(schema.enrollments)
+      .innerJoin(schema.courses, eq(schema.enrollments.courseId, schema.courses.id))
+      .where(eq(schema.enrollments.studentId, studentId))
+      .orderBy(schema.enrollments.enrolledAt);
 
-    return enrollments.map((e) => ({
-      id: e.id,
-      studentId: e.student_id,
-      courseId: e.course_id,
-      period: '',
-      status: e.status,
-      grade: e.grade ?? undefined,
-      observations: undefined,
-      enrolledAt: e.enrolled_at ?? e.created_at,
-      completedAt: e.completed_at ?? undefined,
+    const enrollments = rows.map((r) => ({
+      id: r.id,
+      studentId: r.studentId,
+      courseId: r.courseId,
+      periodId: r.periodId,
+      status: r.status,
+      enrolledAt: r.enrolledAt,
+      completedAt: r.completedAt,
+      grade: r.grade,
+      course: {
+        code: r.courseCode,
+        name: r.courseName,
+        credits: r.courseCredits,
+      },
     }));
+
+    return { data: enrollments };
   })
-  .get('/:id/grades', async ({ params: { id } }) => {
-    const studentRes = await adminClient.database.from('students').select('*').eq('user_id', id).maybeSingle();
-    if (studentRes.error) handleError(studentRes.error, 'student');
-    const student = studentRes.data as InsForgeStudent | null;
-    if (!student) throw { status: 404, message: 'Student not found', code: 'NOT_FOUND' };
+  .get('/:id/grades', async ({ params: { id }, user }) => {
+    await requirePermission(user, 'grades:read:all');
+    const studentId = validateUuid(id);
 
-    const gradesRes = await adminClient.database.from('grades').select('*').eq('student_id', student.id);
-    if (gradesRes.error) handleError(gradesRes.error, 'grades');
-    const grades = (gradesRes.data ?? []) as InsForgeGrade[];
+    const rows = await db
+      .select({
+        id: schema.grades.id,
+        enrollmentId: schema.grades.enrollmentId,
+        name: schema.grades.name,
+        weight: schema.grades.weight,
+        score: schema.grades.score,
+        gradedAt: schema.grades.gradedAt,
+        courseCode: schema.courses.code,
+        courseName: schema.courses.name,
+      })
+      .from(schema.grades)
+      .innerJoin(schema.enrollments, eq(schema.grades.enrollmentId, schema.enrollments.id))
+      .innerJoin(schema.courses, eq(schema.enrollments.courseId, schema.courses.id))
+      .where(eq(schema.enrollments.studentId, studentId))
+      .orderBy(schema.grades.createdAt);
 
-    return grades.map((g) => ({
-      id: g.id,
-      studentId: g.student_id,
-      courseId: g.course_id,
-      enrollmentId: g.enrollment_id,
-      grade: Number(g.grade),
-      letterGrade: g.letter_grade ?? undefined,
-      observations: g.observations ?? undefined,
-      gradedBy: g.graded_by,
-      gradedAt: g.graded_at,
+    const grades = rows.map((r) => ({
+      id: r.id,
+      enrollmentId: r.enrollmentId,
+      name: r.name,
+      weight: r.weight,
+      score: r.score,
+      gradedAt: r.gradedAt,
+      course: {
+        code: r.courseCode,
+        name: r.courseName,
+      },
     }));
+
+    return { data: grades };
   });

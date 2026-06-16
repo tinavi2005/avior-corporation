@@ -1,4 +1,4 @@
-import { api, Student, Enrollment, Grade } from '@/lib/api/client';
+import { api, Grade } from '@/lib/api/client';
 
 export async function getStudentData(studentId: string) {
   const [student, enrollments, grades] = await Promise.all([

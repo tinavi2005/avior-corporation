@@ -3,15 +3,16 @@ import { cors } from '@elysiajs/cors';
 import { swagger } from '@elysiajs/swagger';
 import { authRoutes } from './routes/auth';
 import { studentRoutes } from './routes/students';
+import { teacherRoutes } from './routes/teachers';
+import { programRoutes } from './routes/programs';
 import { courseRoutes } from './routes/courses';
+import { moduleRoutes } from './routes/modules';
+import { lessonRoutes } from './routes/lessons';
+import { evaluationRoutes } from './routes/evaluations';
 import { enrollmentRoutes } from './routes/enrollments';
 import { gradeRoutes } from './routes/grades';
 import { healthRoutes } from './routes/health';
 import { errorHandler } from './lib/error-handler';
-import { jwtMiddleware } from './lib/jwt';
-import type { AuthVariables } from './lib/auth';
-
-export type App = Elysia<{ Variables: AuthVariables }>;
 
 export function createApp() {
   return new Elysia()
@@ -21,32 +22,42 @@ export function createApp() {
         info: {
           title: 'Vale Integrador API',
           version: '1.0.0',
-          description: 'CRM Académico API for Mobile App',
+          description: 'NetAcad-style LMS API',
         },
         tags: [
           { name: 'Auth', description: 'Authentication endpoints' },
+          { name: 'Programs', description: 'Academic programs' },
           { name: 'Students', description: 'Student management' },
+          { name: 'Teachers', description: 'Teacher management' },
           { name: 'Courses', description: 'Course management' },
+          { name: 'Modules', description: 'Course modules' },
+          { name: 'Lessons', description: 'Module lessons' },
+          { name: 'Evaluations', description: 'Course/module evaluations' },
           { name: 'Enrollments', description: 'Enrollment management' },
           { name: 'Grades', description: 'Grade management' },
         ],
       },
     }))
-    .use(jwtMiddleware)
     .onError(errorHandler)
-    .group('/api/v1', (app) => app
-      .use(healthRoutes)
-      .use(authRoutes)
-      .use(studentRoutes)
-      .use(courseRoutes)
-      .use(enrollmentRoutes)
-      .use(gradeRoutes)
+    .group('/api/v1', (app) =>
+      app
+        .use(healthRoutes)
+        .use(authRoutes)
+        .use(programRoutes)
+        .use(studentRoutes)
+        .use(teacherRoutes)
+        .use(courseRoutes)
+        .use(moduleRoutes)
+        .use(lessonRoutes)
+        .use(evaluationRoutes)
+        .use(enrollmentRoutes)
+        .use(gradeRoutes),
     )
-    .get('/', () => ({ 
-      name: 'Vale Integrador API', 
+    .get('/', () => ({
+      name: 'Vale Integrador API',
       version: '1.0.0',
       status: 'running',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }));
 }
 

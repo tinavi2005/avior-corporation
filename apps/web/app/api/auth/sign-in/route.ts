@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   }
 
   // Sync user into public.users / public.profiles / public.user_roles
-  const syncedUser = await syncUserFromAuth({
+  await syncUserFromAuth({
     id: data.user.id,
     email: data.user.email ?? '',
     email_verified: (data.user as any).email_verified ?? true,

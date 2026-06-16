@@ -35,8 +35,6 @@ export async function POST(request: Request) {
   const publicUser = await getUserWithRole(data.user.id)
   const role = publicUser?.role ?? 'student'
 
-  await client.auth.updateUser({ data: { role } })
-
   const response = NextResponse.json({
     user: data.user,
     role,

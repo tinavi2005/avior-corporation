@@ -2,44 +2,40 @@ import { z } from 'zod';
 
 export const gradeSchema = z.object({
   id: z.string().uuid(),
-  studentId: z.string().uuid(),
-  courseId: z.string().uuid(),
   enrollmentId: z.string().uuid(),
-  grade: z.number().min(0).max(100),
-  letterGrade: z.string().max(2).optional(),
-  observations: z.string().max(500).optional(),
-  gradedBy: z.string().uuid(),
-  gradedAt: z.coerce.date(),
-});
-
-export const gradeWithDetailsSchema = gradeSchema.extend({
-  course: z.object({
-    id: z.string().uuid(),
-    name: z.string(),
-    code: z.string(),
-  }).optional(),
-  enrollment: z.object({
-    id: z.string().uuid(),
-    period: z.string(),
-    status: z.string(),
-  }).optional(),
+  name: z.string().min(1).max(200),
+  weight: z.number().int().min(0).max(100),
+  score: z.number().int().min(0).max(100).nullable().optional(),
+  gradedAt: z.coerce.date().nullable().optional(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 });
 
 export const gradeCreateSchema = gradeSchema.omit({
   id: true,
   gradedAt: true,
-  letterGrade: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
+export const gradeUpdateSchema = gradeSchema
+  .pick({
+    name: true,
+    weight: true,
+    score: true,
+    gradedAt: true,
+  })
+  .partial();
+
 export const gradeStatsSchema = z.object({
-  studentId: z.string().uuid(),
+  enrollmentId: z.string().uuid(),
   average: z.number(),
-  totalCredits: z.number(),
-  coursesCompleted: z.number(),
+  weightedScore: z.number(),
+  totalWeight: z.number(),
   grades: gradeSchema.array(),
 });
 
 export type Grade = z.infer<typeof gradeSchema>;
-export type GradeWithDetails = z.infer<typeof gradeWithDetailsSchema>;
 export type GradeCreate = z.infer<typeof gradeCreateSchema>;
+export type GradeUpdate = z.infer<typeof gradeUpdateSchema>;
 export type GradeStats = z.infer<typeof gradeStatsSchema>;

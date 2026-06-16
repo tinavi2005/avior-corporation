@@ -1,5 +1,4 @@
 import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
 import { createServerClient } from '@insforge/sdk/ssr'
 
 export const dynamic = 'force-dynamic'

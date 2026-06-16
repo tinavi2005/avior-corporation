@@ -48,8 +48,8 @@ ios/
 
 # Bun
 bun.lockb
+
 # InsForge & AI agent skills
-.insforge
 .agent
 .agents
 .augment
@@ -62,3 +62,6 @@ bun.lockb
 .roo
 .trae
 .windsurf
+
+# InsForge & AI agent skills
+.insforge

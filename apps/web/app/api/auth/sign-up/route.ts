@@ -12,10 +12,6 @@ export async function POST(request: Request) {
     email: body.email,
     password: body.password,
     name: `${body.firstName} ${body.lastName}`.trim(),
-    user_metadata: {
-      first_name: body.firstName,
-      last_name: body.lastName,
-    },
   })
 
   if (error) {
@@ -54,8 +50,6 @@ export async function POST(request: Request) {
 
     const publicUser = await getUserWithRole(data.user.id)
     const role = publicUser?.role ?? 'student'
-
-    await client.auth.updateUser({ data: { role } })
 
     const response = NextResponse.json({
       user: data.user,

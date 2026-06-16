@@ -105,7 +105,6 @@ export async function syncUserFromAuth(authUser: {
         user_id: authUser.id,
         role_id: roleId,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       })
 
       if (insertRoleError) {
@@ -208,7 +207,6 @@ export async function assignRole(userId: string, roleName: string): Promise<bool
     {
       user_id: userId,
       role_id: roleId,
-      updated_at: new Date().toISOString(),
     },
     { onConflict: 'user_id' }
   )

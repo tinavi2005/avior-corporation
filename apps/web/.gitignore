@@ -1,7 +1,2 @@
-.env.local
-.env
-.env.*.local
-.next/
-out/
-node_modules/
-*.tsbuildinfo
+# Most patterns are already in root .gitignore
+# Keep only Next.js-specific additions here if needed

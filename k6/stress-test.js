@@ -1,3 +1,8 @@
+
+/*
+una prueba de estres significa que
+se generan muchas operaciones pesadas para que el servidor llegue a su limite
+*/ 
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { Rate } from 'k6/metrics';
@@ -22,7 +27,7 @@ const BASE_URL = __ENV.TARGET_URL || 'http://localhost:5555';
 
 export default function () {
   const endpoints = [
-    '/health',
+    '/api/v1/health',
     '/api/v1/students',
     '/api/v1/courses',
     '/api/v1/students/00000000-0000-0000-0000-000000000001',

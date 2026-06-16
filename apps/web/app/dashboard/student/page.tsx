@@ -3,26 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/provider'
-import { api } from '@/lib/api/client'
+import { api, type Enrollment, type Grade } from '@/lib/api/client'
 import { DashboardHeader } from '../_components/dashboard-header'
-
-interface Enrollment {
-  id: string
-  courseId: string
-  status: string
-  grade: number | null
-}
-
-interface Grade {
-  id: string
-  courseId: string
-  grade: number
-  letterGrade: string | null
-}
 
 export default function StudentDashboardPage() {
   const router = useRouter()
-  const { user, isLoading: authLoading, signOut } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
   const [enrollments, setEnrollments] = useState<Enrollment[]>([])
   const [grades, setGrades] = useState<Grade[]>([])
   const [courses, setCourses] = useState<any[]>([])
@@ -44,9 +30,9 @@ export default function StudentDashboardPage() {
     try {
       const studentId = user!.id
       const [enrollmentsData, gradesData, coursesData] = await Promise.all([
-        api.getStudentEnrollments(studentId).catch(() => []),
-        api.getStudentGrades(studentId).catch(() => []),
-        api.getCourses().catch(() => []),
+        api.getStudentEnrollments(studentId).catch((): Enrollment[] => []),
+        api.getStudentGrades(studentId).catch((): Grade[] => []),
+        api.getCourses().catch((): any[] => []),
       ])
       setEnrollments(enrollmentsData)
       setGrades(gradesData)
