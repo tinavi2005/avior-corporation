@@ -4,29 +4,21 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/provider'
 import { DashboardHeader } from '../_components/dashboard-header'
+import { Sidebar } from '../_components/sidebar'
+import { Loader2, Users, FileText, BarChart2 } from 'lucide-react'
 
 export default function SecretaryDashboardPage() {
   const router = useRouter()
-  const { user, isLoading: authLoading } = useAuth()
+  const { user, isLoading } = useAuth()
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login')
-    }
-  }, [authLoading, user, router])
+    if (!isLoading && !user) router.push('/login')
+  }, [isLoading, user, router])
 
-  if (authLoading) {
+  if (isLoading) {
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#fafafa',
-        }}
-      >
-        <p>Cargando sesión...</p>
+      <div className="min-h-screen wine-hero-gradient flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-white animate-spin" />
       </div>
     )
   }
@@ -34,59 +26,43 @@ export default function SecretaryDashboardPage() {
   if (!user) return null
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
-      <DashboardHeader title="Vale Integrador - Secretaría" />
+    <div className="min-h-screen bg-background flex">
+      <Sidebar role="secretary" />
+      <div className="flex-1 flex flex-col min-w-0">
+        <DashboardHeader title="Aula Virtual — Secretaría" />
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+          {/* Welcome banner */}
+          <div className="wine-gradient rounded-2xl p-6 text-white mb-6 animate-fade-in-up">
+            <h2 className="text-2xl font-black">
+              Hola, {user.profile?.firstName || user.email?.split('@')[0]}
+            </h2>
+            <p className="text-white/60 text-sm mt-1">Panel de secretaría</p>
+          </div>
 
-      <main style={{ padding: '32px 24px', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '32px' }}>
-          <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px' }}>
-            Bienvenido, {user.profile?.firstName || user.email}
-          </h2>
-          <p style={{ fontSize: '16px', color: '#666' }}>Panel de secretaría</p>
-        </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '16px',
-          }}
-        >
-          <div
-            style={{
-              padding: '24px',
-              borderRadius: '8px',
-              border: '1px solid #e5e5e5',
-              backgroundColor: 'white',
-            }}
-          >
-            <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>Estudiantes</p>
-            <p style={{ fontSize: '48px', fontWeight: 'bold' }}>0</p>
+          {/* Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-in-up delay-100">
+            {[
+              { label: 'Estudiantes', value: '0', icon: Users },
+              { label: 'Inscripciones', value: '0', icon: FileText },
+              { label: 'Calificaciones', value: '0', icon: BarChart2 },
+            ].map(({ label, value, icon: Icon }, i) => (
+              <div
+                key={label}
+                className="bg-white dark:bg-card rounded-2xl p-6 border border-border shadow-sm card-hover"
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm text-muted-foreground font-medium">{label}</p>
+                  <div className="w-9 h-9 bg-wine/10 rounded-xl flex items-center justify-center">
+                    <Icon className="w-4 h-4 text-wine" />
+                  </div>
+                </div>
+                <p className="text-4xl font-black text-foreground">{value}</p>
+              </div>
+            ))}
           </div>
-          <div
-            style={{
-              padding: '24px',
-              borderRadius: '8px',
-              border: '1px solid #e5e5e5',
-              backgroundColor: 'white',
-            }}
-          >
-            <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>Inscripciones</p>
-            <p style={{ fontSize: '48px', fontWeight: 'bold' }}>0</p>
-          </div>
-          <div
-            style={{
-              padding: '24px',
-              borderRadius: '8px',
-              border: '1px solid #e5e5e5',
-              backgroundColor: 'white',
-            }}
-          >
-            <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>Calificaciones</p>
-            <p style={{ fontSize: '48px', fontWeight: 'bold' }}>0</p>
-          </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   )
 }

@@ -1,28 +1,29 @@
-import Link from 'next/link';
+import { Navbar } from '@/components/landing/navbar'
+import { HeroSection } from '@/components/landing/hero-section'
+import { StatsSection } from '@/components/landing/stats-section'
+import { CarrerasSection } from '@/components/landing/carreras-section'
+import { WhyAviorSection } from '@/components/landing/why-avior-section'
+import { AlianzasSection } from '@/components/landing/alianzas-section'
+import { TestimonialsSection } from '@/components/landing/testimonials-section'
+import { ContactSection } from '@/components/landing/contact-section'
+import { MapSection } from '@/components/landing/map-section'
+import { FaqSection } from '@/components/landing/faq-section'
+import { Footer } from '@/components/landing/footer'
 
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight">Vale Integrador</h1>
-        <p className="text-lg text-muted-foreground">
-          CRM Académico - Sistema de Gestión de Formación Aeronáutica
-        </p>
-        <div className="flex gap-4 justify-center pt-4">
-          <Link
-            href="/login"
-            className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-          >
-            Iniciar Sesión
-          </Link>
-          <Link
-            href="/dashboard"
-            className="px-6 py-3 border border-input bg-background rounded-lg hover:bg-accent transition-colors"
-          >
-            Dashboard
-          </Link>
-        </div>
-      </div>
-    </main>
-  );
+    <div className="min-h-screen bg-white">
+      <Navbar />
+      <HeroSection />
+      <StatsSection />
+      <CarrerasSection />
+      <WhyAviorSection />
+      <AlianzasSection />
+      <TestimonialsSection />
+      <ContactSection />
+      <MapSection />
+      <FaqSection />
+      <Footer />
+    </div>
+  )
 }

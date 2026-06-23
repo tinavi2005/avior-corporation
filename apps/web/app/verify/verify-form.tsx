@@ -47,16 +47,16 @@ export default function VerifyForm({ initialEmail }: VerifyFormProps) {
     setResent(false)
     setError(null)
     try {
-      const { insforge } = await import('@/lib/insforge/client')
-      const { error } = await insforge.auth.resendVerificationEmail({
-        email,
-        redirectTo: `${window.location.origin}/login`
+      const res = await fetch('/api/auth/resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
       })
-
-      if (error) {
-        setError(error.message || 'No se pudo reenviar el código')
-      } else {
+      if (res.ok) {
         setResent(true)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setError(data.message || 'No se pudo reenviar el código')
       }
     } catch {
       setError('Error al reenviar el código')

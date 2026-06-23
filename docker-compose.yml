@@ -1,0 +1,81 @@
+version: '3.9'
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Avior SRL — Docker Compose
+#  Servicios: web (Next.js) + api (Elysia/Bun) + db (PostgreSQL)
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: avior_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     ${POSTGRES_USER:-avior}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-avior_pass}
+      POSTGRES_DB:       ${POSTGRES_DB:-avior_db}
+    volumes:
+      - avior_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-avior} -d ${POSTGRES_DB:-avior_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── API (Elysia + Bun) ──────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: avior_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL:      postgresql://${POSTGRES_USER:-avior}:${POSTGRES_PASSWORD:-avior_pass}@db:5432/${POSTGRES_DB:-avior_db}
+      INSFORGE_URL:      ${INSFORGE_URL:-https://z334twfi.us-east.insforge.app}
+      INSFORGE_API_KEY:  ${INSFORGE_API_KEY}
+      JWT_SECRET:        ${JWT_SECRET:-changeme_in_production}
+      PORT:              5555
+      NODE_ENV:          production
+    ports:
+      - "5555:5555"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5555/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ── Web (Next.js) ───────────────────────────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_INSFORGE_URL:      ${NEXT_PUBLIC_INSFORGE_URL:-https://z334twfi.us-east.insforge.app}
+        NEXT_PUBLIC_INSFORGE_ANON_KEY: ${NEXT_PUBLIC_INSFORGE_ANON_KEY}
+        NEXT_PUBLIC_API_URL:           http://api:5555
+        NEXT_PUBLIC_APP_URL:           ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+    container_name: avior_web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      NEXT_PUBLIC_INSFORGE_URL:      ${NEXT_PUBLIC_INSFORGE_URL:-https://z334twfi.us-east.insforge.app}
+      NEXT_PUBLIC_INSFORGE_ANON_KEY: ${NEXT_PUBLIC_INSFORGE_ANON_KEY}
+      NEXT_PUBLIC_API_URL:           http://api:5555
+      NEXT_PUBLIC_APP_URL:           ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      INSFORGE_API_KEY:              ${INSFORGE_API_KEY}
+      PORT:                          3000
+      NODE_ENV:                      production
+    ports:
+      - "3000:3000"
+
+volumes:
+  avior_pgdata:
+    name: avior_pgdata

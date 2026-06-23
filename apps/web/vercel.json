@@ -1,0 +1,13 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "cd ../.. && pnpm --filter @vale-integrador/web build",
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "outputDirectory": "apps/web/.next",
+  "env": {
+    "NEXT_PUBLIC_INSFORGE_URL": "@insforge_url",
+    "NEXT_PUBLIC_INSFORGE_ANON_KEY": "@insforge_anon_key",
+    "NEXT_PUBLIC_API_URL": "@api_url",
+    "NEXT_PUBLIC_APP_URL": "@app_url",
+    "INSFORGE_API_KEY": "@insforge_api_key"
+  }
+}

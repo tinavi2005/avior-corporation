@@ -2,56 +2,108 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Variables fijas — solo guindo, negro, blanco ─── */
 :root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 221.2 83.2% 53.3%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 221.2 83.2% 53.3%;
-  --radius: 0.5rem;
-}
-
-.dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 217.2 91.2% 59.8%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 224.3 76.3% 48%;
+  --background:             0 0% 100%;
+  --foreground:             0 0% 5%;
+  --card:                   0 0% 100%;
+  --card-foreground:        0 0% 5%;
+  --popover:                0 0% 100%;
+  --popover-foreground:     0 0% 5%;
+  --primary:                349 80% 24%;
+  --primary-foreground:     0 0% 98%;
+  --secondary:              0 0% 96%;
+  --secondary-foreground:   0 0% 10%;
+  --muted:                  0 0% 95%;
+  --muted-foreground:       0 0% 40%;
+  --accent:                 349 80% 24%;
+  --accent-foreground:      0 0% 98%;
+  --destructive:            0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border:                 0 0% 90%;
+  --input:                  0 0% 90%;
+  --ring:                   349 80% 24%;
+  --radius:                 0.625rem;
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+  * { @apply border-border; }
+  html { scroll-behavior: smooth; }
+  body { @apply bg-white text-[#0d0d0d] antialiased; }
 }
+
+/* ─── Gradients ─── */
+@layer utilities {
+  .wine-gradient {
+    background: linear-gradient(135deg, #4a0a12 0%, #6b0f1a 60%, #8b1a28 100%);
+  }
+  .wine-hero-gradient {
+    background: linear-gradient(150deg, #0d0d0d 0%, #2a0608 30%, #6b0f1a 65%, #8b1a28 100%);
+  }
+  .glass {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+
+  /* Animation delays */
+  .delay-75  { animation-delay:  75ms; }
+  .delay-100 { animation-delay: 100ms; }
+  .delay-150 { animation-delay: 150ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+  .delay-600 { animation-delay: 600ms; }
+  .delay-700 { animation-delay: 700ms; }
+
+  /* Interactions */
+  .hover-lift {
+    transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.28s ease;
+  }
+  .hover-lift:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 20px 44px rgba(107,15,26,0.22); }
+
+  .card-hover {
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease, border-color 0.2s ease;
+  }
+  .card-hover:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.10); }
+
+  .btn-shimmer { position: relative; overflow: hidden; }
+  .btn-shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.18) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2.5s linear infinite;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar       { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: #f5f5f5; }
+  ::-webkit-scrollbar-thumb { background: #6b0f1a; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #4a0a12; }
+}
+
+/* ─── Keyframes ─── */
+@keyframes fade-in-up     { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fade-in        { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slide-in-left  { from { opacity: 0; transform: translateX(-36px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slide-in-right { from { opacity: 0; transform: translateX(36px);  } to { opacity: 1; transform: translateX(0); } }
+@keyframes scale-in       { from { opacity: 0; transform: scale(0.88); } to { opacity: 1; transform: scale(1); } }
+@keyframes float          { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+@keyframes shimmer        { from { background-position: -200% 0; } to { background-position: 200% 0; } }
+@keyframes pulse-glow     { 0%,100% { box-shadow: 0 0 0 0 rgba(107,15,26,0.5); } 50% { box-shadow: 0 0 0 14px rgba(107,15,26,0); } }
+@keyframes spin-slow      { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes marquee        { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+.animate-fade-in-up  { animation: fade-in-up    0.6s ease-out both; }
+.animate-fade-in     { animation: fade-in       0.45s ease-out both; }
+.animate-slide-left  { animation: slide-in-left  0.6s ease-out both; }
+.animate-slide-right { animation: slide-in-right 0.6s ease-out both; }
+.animate-scale-in    { animation: scale-in       0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+.animate-float       { animation: float          3.5s ease-in-out infinite; }
+.animate-pulse-glow  { animation: pulse-glow     2s ease-in-out infinite; }
+.animate-spin-slow   { animation: spin-slow     12s linear infinite; }
+.animate-marquee     { animation: marquee       30s linear infinite; }

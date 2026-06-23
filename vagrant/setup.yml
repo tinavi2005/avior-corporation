@@ -1,0 +1,65 @@
+---
+- name: Configurar entorno de desarrollo en Ubuntu
+  hosts: all
+  become: true
+  vars:
+    # Definimos las versiones y el usuario de Vagrant
+    node_version: "20" # Puedes cambiar a la versión LTS que prefieras
+    app_user: "vagrant"
+
+  tasks:
+    - name: Actualizar la caché de paquetes (apt-get update)
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Instalar dependencias básicas del sistema
+      apt:
+        name:
+          - curl
+          - unzip
+          - git
+        state: present
+
+    # --- INSTALACIÓN DE NODE.JS ---
+    - name: Descargar script de instalación de NodeSource
+      get_url:
+        url: "https://deb.nodesource.com/setup_{{ node_version }}.x"
+        dest: "/tmp/nodesource_setup.sh"
+        mode: '0755'
+
+    - name: Ejecutar script de NodeSource
+      command: "/tmp/nodesource_setup.sh"
+      args:
+        creates: /etc/apt/sources.list.d/nodesource.list
+
+    - name: Instalar Node.js
+      apt:
+        name: nodejs
+        state: present
+
+    # --- INSTALACIÓN DE BUN ---
+    - name: Verificar si Bun ya está instalado
+      stat:
+        path: "/home/{{ app_user }}/.bun/bin/bun"
+      register: bun_check
+
+    - name: Instalar Bun para el usuario Vagrant
+      shell: "curl -fsSL https://bun.sh/install | bash"
+      become: true
+      become_user: "{{ app_user }}"
+      when: not bun_check.stat.exists
+
+    # --- INSTALACIÓN DE PNPM ---
+    - name: Verificar si pnpm ya está instalado
+      stat:
+        path: "/home/{{ app_user }}/.local/share/pnpm/pnpm"
+      register: pnpm_check
+
+    - name: Instalar pnpm usando el script oficial
+      shell: "npm i -g pnpm"
+      become: true
+      become_user: "{{ app_user }}"
+      environment:
+        SHELL: /bin/bash
+      when: not pnpm_check.stat.exists

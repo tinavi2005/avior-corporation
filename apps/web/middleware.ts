@@ -1,7 +1,26 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { parseJWTPayload, isTokenExpired } from '@vale-integrador/shared'
 
-const PUBLIC_PATHS = ['/login', '/register', '/api/auth']
+const PUBLIC_PATHS = [
+  '/login', '/register', '/api/auth', '/api/health',
+  '/', '/carreras', '/cursos', '/conocenos', '/contacto',
+  '/aula-virtual', '/inscripcion', '/dashboard',
+]
+
+function parseJWTPayload(token: string): { exp?: number } | null {
+  try {
+    const base64Url = token.split('.')[1]
+    if (!base64Url) return null
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    return JSON.parse(Buffer.from(base64, 'base64').toString('utf-8'))
+  } catch {
+    return null
+  }
+}
+
+function isTokenExpired(payload: { exp?: number }): boolean {
+  if (!payload.exp) return false
+  return Date.now() / 1000 > payload.exp
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl

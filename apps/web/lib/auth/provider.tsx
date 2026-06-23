@@ -6,16 +6,14 @@ export interface User {
   id: string
   email: string
   role: string
-  profile?: {
-    firstName: string
-    lastName: string
-  } | null
+  profile?: { firstName: string; lastName: string } | null
 }
 
 interface AuthContextType {
   user: User | null
   isLoading: boolean
   signOut: () => Promise<void>
+  setDemoUser?: (user: User) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -28,10 +26,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cancelled = false
 
     async function checkUser() {
+      // 1. Check for demo session first
+      if (typeof window !== 'undefined') {
+        const demoRaw = sessionStorage.getItem('avior_demo_user')
+        if (demoRaw) {
+          try {
+            const demoUser = JSON.parse(demoRaw)
+            if (!cancelled) {
+              setUser(demoUser)
+              setIsLoading(false)
+            }
+            return
+          } catch { /* ignore */ }
+        }
+      }
+
+      // 2. Check real auth
       try {
         const res = await fetch('/api/auth/me')
         if (cancelled) return
-
         if (res.ok) {
           const data = await res.json()
           setUser(data.user)
@@ -46,19 +59,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     checkUser()
-    return () => {
-      cancelled = true
-    }
+    return () => { cancelled = true }
   }, [])
 
   async function signOut() {
+    // Clear demo session if present
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('avior_demo_user')
+    }
     try {
       await fetch('/api/auth/signout', { method: 'POST' })
-      setUser(null)
-      window.location.href = '/login'
-    } catch (error) {
-      console.error('Sign out error:', error)
-    }
+    } catch { /* ignore */ }
+    setUser(null)
+    window.location.href = '/login'
   }
 
   return (
@@ -69,9 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
+  return ctx
 }
