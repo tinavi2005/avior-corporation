@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest'
 
 import { verifyToken, clearJwksCache } from '../../../src/lib/jwt-verify'
-
+//verifica que tokens de sesion sean válidos con vitest
 let privateKey: CryptoKey
 let publicKeyJwk: JsonWebKey
 

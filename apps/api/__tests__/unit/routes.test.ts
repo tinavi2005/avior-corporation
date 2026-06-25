@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { createApp } from '../../src/app'
-
+//prueba de rutas, autenticacion y funcione de la API
 describe('Health Check', () => {
   it('GET / returns API info', async () => {
     const app = createApp()

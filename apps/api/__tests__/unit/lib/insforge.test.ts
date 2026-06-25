@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { createInsForgeAdminClient } from '../../../src/lib/insforge'
-
+// prueba que la base de datos funcione correctamente
 beforeEach(() => {
   vi.unstubAllEnvs()
 })

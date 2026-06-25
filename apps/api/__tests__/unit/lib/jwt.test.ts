@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 const { mockVerifyToken } = vi.hoisted(() => ({
   mockVerifyToken: vi.fn(),
 }))
-
+// crea sesion falsa para probar la funcion resolveUser
 vi.mock('../../../src/lib/jwt-verify', () => ({
   verifyToken: mockVerifyToken,
   clearJwksCache: vi.fn(),
