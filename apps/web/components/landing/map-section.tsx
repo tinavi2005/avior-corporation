@@ -1,18 +1,39 @@
 import { MapPin, Phone, Clock, ExternalLink } from 'lucide-react'
 
 const sedes = [
-  { name: 'Base Central — La Paz',   city: 'La Paz',       address: 'Av. 6 de Agosto, entre Pedro Salazar y Lisimaco Gutiérrez #2530', reference: 'Frente al banco Mutual La Primera', phone: '+591 62530806', hours: 'Lun-Vie 08:30–12:30 · 14:30–18:30', mapUrl: 'https://share.google/8F7z2ivxUMmCvyG1b',    featured: true },
-  { name: 'Satélite Cochabamba',     city: 'Cochabamba',   address: 'Av. Segunda, esquina Marina Nuñez del Prado',                     reference: 'A 3 cuadras del Mercado 10 de Febrero',  phone: '+591 77218909', hours: 'Lun-Vie 08:30–17:10',                         mapUrl: 'https://share.google/77eYH1pxtZDezGI31',  featured: false },
-  { name: 'Satélite Tarija',         city: 'Tarija',       address: 'Calle Ramón Rojas, entre Ingavi y Madrid #573',                   reference: 'Cerca Plaza Uriondo',                    phone: '+591 75145330', hours: 'Lun-Vie 08:30–12:30 · 14:30–18:30', mapUrl: 'https://share.google/hmNciJBJSQgHJKMClN', featured: false },
-  { name: 'Satélite Sucre',          city: 'Sucre',        address: 'Calle J. Pérez, entre La Paz y Azurduy #342',                    reference: 'Frente al Supermercado SAS',             phone: '+591 69322199', hours: 'Lun-Vie 08:30–12:30 · 14:30–18:30', mapUrl: 'https://share.google/hjhpoIRw9NTCWBQzz',  featured: false },
+  {
+    name: 'Base Central — La Paz', city: 'La Paz',
+    address: 'Av. 6 de Agosto, entre Pedro Salazar y Lisimaco Gutiérrez #2530',
+    reference: 'Frente al banco Mutual La Primera',
+    phone: '+591 62530806', hours: 'Lun-Vie 08:30–12:30 · 14:30–18:30',
+    mapUrl: 'https://share.google/8F7z2ivxUMmCvyG1b', featured: true,
+    embedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3825.515!2d-68.13618!3d-16.50571!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x915f20e7ba9e85a7%3A0x8bfc6e0cb5e7f0c5!2sAv.%206%20de%20Agosto%202530%2C%20La%20Paz!5e0!3m2!1ses!2sbo!4v1719000000000',
+  },
+  {
+    name: 'Satélite Cochabamba', city: 'Cochabamba',
+    address: 'Calle Lanza, La Paz y Cochabamba',
+    reference: 'Cochabamba, Bolivia',
+    phone: '+591 75496739', hours: 'Lun-Vie 08:30–17:10',
+    mapUrl: 'https://share.google/x05iBZsDlinWfNpkt', featured: false,
+    embedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3751.384!2d-66.15682!3d-17.38895!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x93e37231b5bbead9%3A0x1b5a04e4c4f4e9d5!2sCochabamba!5e0!3m2!1ses!2sbo!4v1719000000001',
+  },
+  {
+    name: 'Satélite Tarija', city: 'Tarija',
+    address: 'Calle Ramón Rojas, entre Ingavi y Madrid #573',
+    reference: 'Cerca Plaza Uriondo',
+    phone: '+591 75145330', hours: 'Lun-Vie 08:30–12:30 · 14:30–18:30',
+    mapUrl: 'https://share.google/hmNciJBJSQgHJKMClN', featured: false,
+    embedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3786.8!2d-64.72820!3d-21.53550!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x941b2b7d5e3a0001%3A0x1234567890abcdef!2sCalle%20Ram%C3%B3n%20Rojas%20573%2C%20Tarija!5e0!3m2!1ses!2sbo!4v1719000000002',
+  },
+  {
+    name: 'Satélite Sucre', city: 'Sucre',
+    address: 'Calle J. Pérez, entre La Paz y Azurduy #342',
+    reference: 'Frente al Supermercado SAS',
+    phone: '+591 69322199', hours: 'Lun-Vie 08:30–12:30 · 14:30–18:30',
+    mapUrl: 'https://share.google/hjhpoIRw9NTCWBQzz', featured: false,
+    embedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3792.5!2d-65.25990!3d-19.04780!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x93fbb4b3f6c68001%3A0xabcdef1234567890!2sCalle%20J.%20P%C3%A9rez%20342%2C%20Sucre!5e0!3m2!1ses!2sbo!4v1719000000003',
+  },
 ]
-
-const embedUrls: Record<string, string> = {
-  'La Paz':      'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3825.4!2d-68.1339!3d-16.5064!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sAv.+6+de+Agosto+2530%2C+La+Paz!5e0!3m2!1ses!2sbo!4v1',
-  'Cochabamba':  'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3751.2!2d-66.1568!3d-17.3895!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sAv.+Segunda%2C+Cochabamba!5e0!3m2!1ses!2sbo!4v1',
-  'Tarija':      'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3786.8!2d-64.7282!3d-21.5355!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sCalle+Ram%C3%B3n+Rojas+573%2C+Tarija!5e0!3m2!1ses!2sbo!4v1',
-  'Sucre':       'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3792.5!2d-65.2599!3d-19.0478!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sCalle+J.+P%C3%A9rez+342%2C+Sucre!5e0!3m2!1ses!2sbo!4v1',
-}
 
 export function MapSection() {
   return (
@@ -31,18 +52,22 @@ export function MapSection() {
                 sede.featured ? 'border-wine/30 shadow-xl shadow-wine/10' : 'border-gray-100 shadow-sm'
               }`}
               style={{ animationDelay: `${i * 100}ms` }}>
-              {/* Map */}
+              {/* Map iframe */}
               <div className="relative h-48 sm:h-56 bg-gray-100">
-                <iframe src={embedUrls[sede.city]} width="100%" height="100%"
-                  style={{ border: 0 }} allowFullScreen loading="lazy"
+                <iframe
+                  src={sede.embedUrl}
+                  width="100%" height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  title={`Mapa ${sede.name}`} className="absolute inset-0" />
+                  title={`Mapa ${sede.name}`}
+                  className="absolute inset-0"
+                />
                 <div className="absolute top-3 left-3 z-10">
                   <span className={`text-xs font-bold px-3 py-1 rounded-full shadow-md ${
                     sede.featured ? 'wine-gradient text-white' : 'bg-white text-[#0d0d0d]'
-                  }`}>
-                    {sede.city}
-                  </span>
+                  }`}>{sede.city}</span>
                 </div>
               </div>
               {/* Info */}
