@@ -1,5 +1,43 @@
-import { parseJWTPayload, isTokenExpired } from '@vale-integrador/shared'
-import type { JWTPayload } from '@vale-integrador/shared'
+// --- IMPLEMENTACIONES LOCALES PARA REEMPLAZAR @VALE-INTEGRADOR/SHARED ---
+
+export interface JWTPayload {
+  id?: string;
+  sub?: string;
+  email?: string;
+  role?: string;
+  exp?: number;
+  iat?: number;
+  [key: string]: any;
+}
+
+/**
+ * Decodifica un JWT manualmente extrayendo la sección del Payload (Base64Url)
+ */
+export function parseJWTPayload(token: string): JWTPayload | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    
+    // El payload es el segundo segmento
+    const payloadBuffer = Buffer.from(parts[1], 'base64url');
+    return JSON.parse(payloadBuffer.toString('utf-8')) as JWTPayload;
+  } catch (error) {
+    console.error('Error parseando JWT payload:', error);
+    return null;
+  }
+}
+
+/**
+ * Verifica si el token ya ha expirado basándose en el campo 'exp'
+ */
+export function isTokenExpired(payload: JWTPayload): boolean {
+  if (!payload || !payload.exp) return true;
+  
+  const currentTime = Math.floor(Date.now() / 1000);
+  return payload.exp < currentTime;
+}
+
+// --- CÓDIGO ORIGINAL DE VERIFICACIÓN DE LLAVES Y TOKENS ---
 
 interface JwkKey {
   kid?: string
